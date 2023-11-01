@@ -51,7 +51,7 @@ public class FilmController {
         return films.values();
     }
 
-    private static boolean checkParameters (Film film) throws FilmValidationException {
+    private static boolean checkParameters(Film film) throws FilmValidationException {
         if (checkIfNotSet(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration())) {
             log.debug("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
             throw new FilmValidationException("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration");

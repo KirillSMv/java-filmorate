@@ -54,7 +54,7 @@ public class UserController {
         return users.values();
     }
 
-    private static boolean checkParameters (User user) throws UserValidationException {
+    private static boolean checkParameters(User user) throws UserValidationException {
         if (checkIfNotSet(user.getEmail(), user.getLogin(), user.getBirthday())) {
             log.error("Заданы не все данные для пользователя {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
             throw new UserValidationException("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday");

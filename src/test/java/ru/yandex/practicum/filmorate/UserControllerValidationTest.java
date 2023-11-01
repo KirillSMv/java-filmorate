@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import ru.yandex.practicum.filmorate.controllers.UserController;
 import ru.yandex.practicum.filmorate.exceptions.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -14,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserControllerValidationTest { //проверка валидации
     private UserController controller;
+
     @BeforeEach
     public void setup() {
         controller = new UserController();
     }
-
 
     @Test
     public void givenEmptyEmail_whenAddUser_thenValidationFailed() {
