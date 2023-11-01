@@ -2,8 +2,7 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
-import ru.yandex.practicum.filmorate.exceptions.UserNotAddedException;
+import ru.yandex.practicum.filmorate.exceptions.UserExistingException;
 import ru.yandex.practicum.filmorate.exceptions.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -19,12 +18,12 @@ public class UserController {
     private int idOfUser;
 
     @PostMapping("/users")
-    public User addUser(@RequestBody User user) throws UserAlreadyExistsException, UserValidationException {
+    public User addUser(@RequestBody User user) throws UserExistingException, UserValidationException {
         checkParameters(user);
         user.setId(generateId());
         if (users.containsKey(user.getId())) {
             log.debug("пользователь с id {} уже существует.", user.getId());
-            throw new UserAlreadyExistsException("Пользователь с id " + user.getId() + " уже существует.");
+            throw new UserExistingException("Пользователь с id " + user.getId() + " уже существует.");
         }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -35,13 +34,13 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public User updateUser(@RequestBody User user) throws UserValidationException, UserNotAddedException {
+    public User updateUser(@RequestBody User user) throws UserValidationException, UserExistingException {
         checkParameters(user);
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         if (!users.containsKey(user.getId())) {
-            throw new UserNotAddedException("Такого пользователя нет, пожалуйста, в начале добавьте пользователя с id: " + user.getId());
+            throw new UserExistingException("Такого пользователя нет, пожалуйста, в начале добавьте пользователя с id: " + user.getId());
         }
         users.put(user.getId(), user);
         log.debug("Сохраняемый объект: {}", user);

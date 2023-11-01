@@ -11,6 +11,7 @@ public class FilmValidationException extends RuntimeException {
     public FilmValidationException(String message) {
         super(message);
     }
+
     public FilmValidationException(String message, String name, String description, LocalDate releaseDate, int duration) {
         this(message);
         this.name = name;

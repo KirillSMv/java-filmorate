@@ -3,8 +3,7 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
-import ru.yandex.practicum.filmorate.exceptions.FilmNotAddedException;
+import ru.yandex.practicum.filmorate.exceptions.FilmExistingException;
 import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -22,12 +21,12 @@ public class FilmController {
     private int idOfFilm;
 
     @PostMapping("/films")
-    public Film postFilm(@RequestBody Film film) throws FilmValidationException, FilmAlreadyExistsException {
+    public Film postFilm(@RequestBody Film film) throws FilmValidationException, FilmExistingException {
         checkParameters(film);
         film.setId(generateId());
         if (films.containsKey(film.getId())) {
             log.debug("фильм с id {} уже существует.", film.getId());
-            throw new FilmAlreadyExistsException("фильм с id " + film.getId() + " уже добавлен");
+            throw new FilmExistingException("фильм с id " + film.getId() + " уже добавлен");
         }
         films.put(film.getId(), film);
         log.debug("Сохраняемый объект: {}", film);
@@ -35,10 +34,10 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film) throws FilmValidationException, FilmNotAddedException {
+    public Film updateFilm(@RequestBody Film film) throws FilmValidationException, FilmExistingException {
         checkParameters(film);
         if (!films.containsKey(film.getId())) {
-            throw new FilmNotAddedException("Такого фильма еще нет, пожалуйста, в начале добавьте фильм с id: " + film.getId());
+            throw new FilmExistingException("Такого фильма еще нет, пожалуйста, в начале добавьте фильм с id: " + film.getId());
         }
         films.put(film.getId(), film);
         log.debug("Сохраняемый объект: {}", film);
