@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import ru.yandex.practicum.filmorate.controllers.UserController;
-import ru.yandex.practicum.filmorate.exceptions.UserParametersException;
+import ru.yandex.practicum.filmorate.exceptions.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -11,144 +12,117 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class UserControllerValidationTest {
-    UserController controller = new UserController();
+public class UserControllerValidationTest { //проверка валидации
+    private UserController controller;
+    @BeforeEach
+    public void setup() {
+        controller = new UserController();
+    }
 
 
     @Test
-    public void givenEmptyEmail_whenCheckParameters_thenValidationFailed() {
+    public void givenEmptyEmail_whenAddUser_thenValidationFailed() {
         User user = User.builder()
                 .name("name")
                 .login("login@login")
                 .birthday(LocalDate.of(2021, 10, 10))
                 .email(" ")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenIncorrectEmail_whenCheckParameters_thenValidationFailed() {
+    public void givenIncorrectEmail_whenAddUser_thenValidationFailed() {
         User user = User.builder()
                 .name("name")
                 .login("login@login")
                 .birthday(LocalDate.of(2021, 10, 10))
                 .email("email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenBlankLogin_whenCheckParameters_thenValidationFailed() {
+    public void givenBlankLogin_whenAddUser_thenValidationFailed() {
         User user = User.builder()
                 .name("name")
                 .login(" ")
                 .birthday(LocalDate.of(2021, 10, 10))
                 .email("email@email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenIncorrectLogin_whenCheckParameters_thenValidationFailed() {
+    public void givenIncorrectLogin_whenAddUser_thenValidationFailed() {
         User user = User.builder()
                 .name("name")
                 .login("login ")
                 .birthday(LocalDate.of(2021, 10, 10))
                 .email("email@email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenIncorrectBirthday_whenCheckParameters_thenValidationFailed() {
+    public void givenIncorrectBirthday_whenAddUser_thenValidationFailed() {
         User user = User.builder()
                 .name("name")
                 .login("login")
                 .birthday(LocalDate.of(2025, 10, 10))
                 .email("email@email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenEmptyLogin_whenCheckParameters_thenShouldTrowException() {
+    public void givenEmptyLogin_whenAddUser_thenShouldTrowException() {
         User user = User.builder()
                 .name("name")
                 .birthday(LocalDate.of(2020, 10, 10))
                 .email("email@email")
                 .build();
-        final UserParametersException exception = assertThrows(
-                UserParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday", exception.getMessage());
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenEmptyBirthday_whenCheckParameters_thenShouldTrowException() {
+    public void givenEmptyBirthday_whenAddUser_thenShouldTrowException() {
         User user = User.builder()
                 .name("name")
                 .login("login")
                 .email("email@email")
                 .build();
-        final UserParametersException exception = assertThrows(
-                UserParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday", exception.getMessage());
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenEmptyEmail_whenCheckParameters_thenShouldTrowException() {
+    public void givenEmptyEmail_whenAddUser_thenShouldTrowException() {
         User user = User.builder()
                 .name("name")
                 .login("login")
                 .birthday(LocalDate.of(2020, 10, 10))
                 .build();
-        final UserParametersException exception = assertThrows(
-                UserParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday", exception.getMessage());
+        assertThrows(UserValidationException.class, () -> controller.addUser(user));
     }
 
     @Test
-    public void givenEmptyName_whenCheckParameters_thenShouldTrowException() {
+    public void givenEmptyName_whenAddUser_thenShouldTrowException() {
         User user = User.builder()
                 .login("login")
                 .birthday(LocalDate.of(2020, 10, 10))
                 .email("email@email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(false, areParametersInCorrect);
+        assertEquals(user, controller.addUser(user));
     }
 
     @Test
-    public void givenCorrectParameters_whenCheckParameters_thenShouldTrowException() {
+    public void givenCorrectParameters_whenAddUser_thenShouldTrowException() {
         User user = User.builder()
                 .name("name")
                 .login("login")
                 .birthday(LocalDate.of(2020, 10, 10))
                 .email("email@email")
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(user.getEmail(), user.getLogin(), user.getBirthday());
-        assertEquals(false, areParametersInCorrect);
+        assertEquals(user, controller.addUser(user));
     }
 }

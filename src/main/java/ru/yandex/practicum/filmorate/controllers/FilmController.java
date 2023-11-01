@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotAddedException;
-import ru.yandex.practicum.filmorate.exceptions.FilmParametersException;
 import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -19,17 +18,12 @@ import static java.time.Month.DECEMBER;
 @Slf4j
 @RestController
 public class FilmController {
-    Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
     private int idOfFilm;
 
     @PostMapping("/films")
-    public Film postFilm(@RequestBody Film film) throws FilmValidationException, FilmAlreadyExistsException, FilmParametersException {
-        boolean areParametersInCorrect = checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-
-        if (areParametersInCorrect) {
-            log.debug("Некорректно указаны параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-            throw new FilmValidationException("Неверное указаны параметры.", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        }
+    public Film postFilm(@RequestBody Film film) throws FilmValidationException, FilmAlreadyExistsException {
+        checkParameters(film);
         film.setId(generateId());
         if (films.containsKey(film.getId())) {
             log.debug("фильм с id {} уже существует.", film.getId());
@@ -41,13 +35,8 @@ public class FilmController {
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film) throws FilmValidationException, FilmParametersException, FilmNotAddedException {
-        boolean areParametersIncorrect = checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-
-        if (areParametersIncorrect) {
-            log.debug("Некорректно указаны параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-            throw new FilmValidationException("Неверное указаны параметры.", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        }
+    public Film updateFilm(@RequestBody Film film) throws FilmValidationException, FilmNotAddedException {
+        checkParameters(film);
         if (!films.containsKey(film.getId())) {
             throw new FilmNotAddedException("Такого фильма еще нет, пожалуйста, в начале добавьте фильм с id: " + film.getId());
         }
@@ -62,16 +51,37 @@ public class FilmController {
         return films.values();
     }
 
-    public boolean checkParameters(String name, String description, LocalDate releaseDate, Integer duration) throws FilmParametersException {
-        if (checkIfNotSet(name, description, releaseDate, duration)) {
-            log.debug("Заданы не все параметры фильма {}, {}, {}, {}", name, description, releaseDate, duration);
-            throw new FilmParametersException("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration");
+    private static boolean checkParameters (Film film) throws FilmValidationException {
+        if (checkIfNotSet(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration())) {
+            log.debug("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
+            throw new FilmValidationException("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration");
         }
-        return name.isBlank() || description.length() > 200 || releaseDate.isBefore(LocalDate.of(1895, DECEMBER, 28))
-                || releaseDate.isAfter(LocalDate.now()) || duration <= 0;
+        if (film.getName().isBlank()) {
+            String msg = "имя не может быть пустым";
+            log.error(msg);
+            throw new FilmValidationException(msg);
+        }
+        if (film.getDescription().length() > 200) {
+            String msg = "количество символов описания фильма не может быть больше 200";
+            log.error(msg);
+            throw new FilmValidationException(msg);
+        }
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, DECEMBER, 28))) {
+            log.error("дата релиза фильма не может быть ранее 28 декабря 1895 года, введенная дата: {}", film.getReleaseDate());
+            throw new FilmValidationException("дата релиза фильма не может быть ранее 28 декабря 1895 года");
+        }
+        if (film.getReleaseDate().isAfter(LocalDate.now())) {
+            log.error("дата релиза фильма не может быть в будущем, введенная дата: {}", film.getReleaseDate());
+            throw new FilmValidationException("дата релиза фильма не может быть в будущем");
+        }
+        if (film.getDuration() <= 0) {
+            log.error("длительность фильма не может быть менее или равна 0, введенная длительность {}", film.getDuration());
+            throw new FilmValidationException("длительность фильма не может быть менее или равна 0");
+        }
+        return true;
     }
 
-    private boolean checkIfNotSet(String name, String description, LocalDate releaseDate, Integer duration) {
+    private static boolean checkIfNotSet(String name, String description, LocalDate releaseDate, Integer duration) {
         return name == null || description == null || releaseDate == null || duration == null;
     }
 

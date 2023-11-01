@@ -1,9 +1,11 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
+
 import ru.yandex.practicum.filmorate.controllers.FilmController;
-import ru.yandex.practicum.filmorate.exceptions.FilmParametersException;
+import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
+import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
@@ -11,23 +13,27 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FilmControllerValidationTest {
-    FilmController controller = new FilmController();
+public class FilmControllerValidationTest { //проверка валидации
+    private FilmController controller;
+
+    @BeforeEach
+    public void setup() {
+        controller = new FilmController();
+    }
 
     @Test
-    public void givenBlankName_whenCheckParameters_thenValidationFailed() {
+    public void givenBlankName_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("")
                 .description("description")
                 .releaseDate(LocalDate.of(2020, 10, 10))
                 .duration(100)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenLongDescription_whenCheckParameters_thenValidationFailed() {
+    public void givenLongDescription_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("Пятеро друзей ( комик-группа «Шарло»), приезжают в город Бризуль. " +
@@ -36,132 +42,91 @@ public class FilmControllerValidationTest {
                 .releaseDate(LocalDate.of(2020, 10, 10))
                 .duration(100)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenIncorrectReleaseDate_whenCheckParameters_thenValidationFailed() {
+    public void givenIncorrectReleaseDate_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.of(1895, 12, 27))
                 .duration(100)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenReleaseDateInTheFuture_whenCheckParameters_thenValidationFailed() {
+    public void givenReleaseDateInTheFuture_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.now().plusDays(1))
                 .duration(100)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenZeroDuration_whenCheckParameters_thenValidationFailed() {
+    public void givenZeroDuration_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.of(2020, 10, 20))
                 .duration(0)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenIncorrectDuration_whenCheckParameters_thenValidationFailed() {
+    public void givenIncorrectDuration_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.of(2020, 10, 20))
                 .duration(-1)
                 .build();
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(true, areParametersInCorrect);
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenEmptyName_whenCheckParameters_thenValidationFailed() {
+    public void givenEmptyName_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .description("description")
                 .releaseDate(LocalDate.of(2020, 10, 20))
                 .duration(100)
                 .build();
-
-        FilmParametersException exception = assertThrows(
-                FilmParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration", exception.getMessage());
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenEmptyDescription_whenCheckParameters_thenValidationFailed() {
+    public void givenEmptyDescription_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .releaseDate(LocalDate.of(2020, 10, 20))
                 .duration(100)
                 .build();
-
-        FilmParametersException exception = assertThrows(
-                FilmParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration", exception.getMessage());
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenEmptyReleaseDate_whenCheckParameters_thenValidationFailed() {
+    public void givenEmptyReleaseDate_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .duration(100)
                 .build();
-
-        FilmParametersException exception = assertThrows(
-                FilmParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration", exception.getMessage());
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
-    public void givenEmptyDuration_whenCheckParameters_thenValidationFailed() {
+    public void givenEmptyDuration_whenPostFilm_thenValidationFailed() {
         Film film = Film.builder()
                 .name("name")
                 .description("description")
                 .releaseDate(LocalDate.of(2020, 10, 20))
                 .build();
-
-        FilmParametersException exception = assertThrows(
-                FilmParametersException.class,
-                new Executable() {
-                    @Override
-                    public void execute() throws Throwable {
-                        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-                    }
-                });
-        assertEquals("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration", exception.getMessage());
+        assertThrows(FilmValidationException.class, () -> controller.postFilm(film));
     }
 
     @Test
@@ -172,9 +137,7 @@ public class FilmControllerValidationTest {
                 .releaseDate(LocalDate.of(1895, 12, 28))
                 .duration(100)
                 .build();
-
-        boolean areParametersInCorrect = controller.checkParameters(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-        assertEquals(false, areParametersInCorrect);
+        assertEquals(film, controller.postFilm(film));
     }
 }
 
