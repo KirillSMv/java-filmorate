@@ -18,14 +18,10 @@ public class UserController {
     private int idOfUser;
 
     @PostMapping("/users")
-    public User addUser(@RequestBody User user) throws UserExistingException, UserValidationException {
+    public User addUser(@RequestBody User user) {
         checkParameters(user);
         user.setId(generateId());
-        if (users.containsKey(user.getId())) {
-            log.debug("пользователь с id {} уже существует.", user.getId());
-            throw new UserExistingException("Пользователь с id " + user.getId() + " уже существует.");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (validateName(user.getName())) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
@@ -34,12 +30,13 @@ public class UserController {
     }
 
     @PutMapping("/users")
-    public User updateUser(@RequestBody User user) throws UserValidationException, UserExistingException {
+    public User updateUser(@RequestBody User user) {
         checkParameters(user);
-        if (user.getName() == null || user.getName().isBlank()) {
+        if (validateName(user.getName())) {
             user.setName(user.getLogin());
         }
         if (!users.containsKey(user.getId())) {
+            log.warn("пользователя с id {} еще не существует.", user.getId());
             throw new UserExistingException("Такого пользователя нет, пожалуйста, в начале добавьте пользователя с id: " + user.getId());
         }
         users.put(user.getId(), user);
@@ -53,7 +50,7 @@ public class UserController {
         return users.values();
     }
 
-    private static boolean checkParameters(User user) throws UserValidationException {
+    private void checkParameters(User user) {
         if (checkIfNotSet(user.getEmail(), user.getLogin(), user.getBirthday())) {
             log.error("Заданы не все данные для пользователя {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
             throw new UserValidationException("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday");
@@ -80,14 +77,17 @@ public class UserController {
             log.error("День Рождения не может быть в будушем, введенная дата: {}", user.getBirthday());
             throw new UserValidationException("День Рождения не может быть в будушем");
         }
-        return true;
     }
 
     private int generateId() {
         return ++idOfUser;
     }
 
-    private static boolean checkIfNotSet(String email, String login, LocalDate birthday) {
+    private boolean checkIfNotSet(String email, String login, LocalDate birthday) {
         return email == null || login == null || birthday == null;
+    }
+
+    private boolean validateName(String name) {
+        return name == null || name.isBlank();
     }
 }

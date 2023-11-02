@@ -21,22 +21,19 @@ public class FilmController {
     private int idOfFilm;
 
     @PostMapping("/films")
-    public Film postFilm(@RequestBody Film film) throws FilmValidationException, FilmExistingException {
+    public Film postFilm(@RequestBody Film film) {
         checkParameters(film);
         film.setId(generateId());
-        if (films.containsKey(film.getId())) {
-            log.debug("фильм с id {} уже существует.", film.getId());
-            throw new FilmExistingException("фильм с id " + film.getId() + " уже добавлен");
-        }
         films.put(film.getId(), film);
         log.debug("Сохраняемый объект: {}", film);
         return film;
     }
 
     @PutMapping("/films")
-    public Film updateFilm(@RequestBody Film film) throws FilmValidationException, FilmExistingException {
+    public Film updateFilm(@RequestBody Film film) {
         checkParameters(film);
         if (!films.containsKey(film.getId())) {
+            log.warn("фильма с id {} еще не существует.", film.getId());
             throw new FilmExistingException("Такого фильма еще нет, пожалуйста, в начале добавьте фильм с id: " + film.getId());
         }
         films.put(film.getId(), film);
@@ -50,9 +47,9 @@ public class FilmController {
         return films.values();
     }
 
-    private static boolean checkParameters(Film film) throws FilmValidationException {
+    private void checkParameters(Film film) {
         if (checkIfNotSet(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration())) {
-            log.debug("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
+            log.warn("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
             throw new FilmValidationException("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration");
         }
         if (film.getName().isBlank()) {
@@ -77,10 +74,9 @@ public class FilmController {
             log.error("длительность фильма не может быть менее или равна 0, введенная длительность {}", film.getDuration());
             throw new FilmValidationException("длительность фильма не может быть менее или равна 0");
         }
-        return true;
     }
 
-    private static boolean checkIfNotSet(String name, String description, LocalDate releaseDate, Integer duration) {
+    private boolean checkIfNotSet(String name, String description, LocalDate releaseDate, Integer duration) {
         return name == null || description == null || releaseDate == null || duration == null;
     }
 
