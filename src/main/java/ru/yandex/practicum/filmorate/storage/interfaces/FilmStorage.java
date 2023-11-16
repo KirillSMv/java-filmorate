@@ -1,16 +1,17 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.interfaces;
 
-import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.List;
+
 public interface FilmStorage {
-    //добавление, удаление, модификация объектов
-    //получение объекта? todo
     Film addFilm(Film film);
 
     Film updateFilm(Film film);
 
-    void deleteFilm(String name);
+    void deleteFilmById(Integer id);
 
-    Film getFilm(String name);
+    Film getFilmById(Integer id);
+
+    List<Film> getFilms();
 }

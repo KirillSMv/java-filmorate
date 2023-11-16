@@ -1,59 +1,81 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.UserExistingException;
 import ru.yandex.practicum.filmorate.exceptions.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
 public class UserController {
-    private final Map<Integer, User> users = new HashMap<>();
-    private int idOfUser;
+    private final UserService userService;
+
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/users")
     public User addUser(@RequestBody User user) {
         checkParameters(user);
-        user.setId(generateId());
-        if (validateName(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-        log.debug("Сохраняемый объект: {}", user);
-        return user;
+        return userService.addUser(user);
     }
 
     @PutMapping("/users")
     public User updateUser(@RequestBody User user) {
         checkParameters(user);
-        if (validateName(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        if (!users.containsKey(user.getId())) {
-            log.warn("пользователя с id {} еще не существует.", user.getId());
-            throw new UserExistingException("Такого пользователя нет, пожалуйста, в начале добавьте пользователя с id: " + user.getId());
-        }
-        users.put(user.getId(), user);
-        log.debug("Сохраняемый объект: {}", user);
-        return user;
+        return userService.updateUser(user);
     }
 
     @GetMapping("/users")
-    public Collection<User> getUsers() {
-        log.debug("Количество пользователей на текущий момент: {}", users.size());
-        return users.values();
+    public List<User> getUsers() {
+        return userService.getUsers();
+    }
+
+    @GetMapping("/users/{id}")
+    public User getUserById(@PathVariable("id") Integer id) {
+        return userService.getUserById(id);
+    }
+
+    @DeleteMapping("/users/{id}")
+    public String deleteUserById(@PathVariable("id") Integer id) {
+        userService.deleteUserById(id);
+        return String.format("Пользователь с id %d удален", id);
+    }
+
+    @PutMapping("/users/{id}/friends/{friendId}")
+    public String addToFriends(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userService.addToFriends(id, friendId);
+        return "Пользователи добавлены в друзья";
+    }
+
+    @DeleteMapping("/users/{id}/friends/{friendId}")
+    public String deleteFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userService.deleteFriend(id, friendId);
+        return "Пользователи удалены из друзей";
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getFriends(@PathVariable("id") Integer id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriends(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 
     private void checkParameters(User user) {
         if (checkIfNotSet(user.getEmail(), user.getLogin(), user.getBirthday())) {
-            log.error("Заданы не все данные для пользователя {}, {}, {}", user.getEmail(), user.getLogin(), user.getBirthday());
-            throw new UserValidationException("Пожалуйста, убедитесь, что заданы все необходимые данные для пользователя: email, login, birthday");
+            log.error("Заданы не все данные для пользователя {}, {}, {}", user.getEmail(),
+                    user.getLogin(), user.getBirthday());
+            throw new UserValidationException("Пожалуйста, убедитесь, что заданы все необходимые данные " +
+                    "для пользователя: email, login, birthday");
         }
         if (user.getEmail().isBlank()) {
             String msg = "email не может быть пустым";
@@ -79,15 +101,7 @@ public class UserController {
         }
     }
 
-    private int generateId() {
-        return ++idOfUser;
-    }
-
     private boolean checkIfNotSet(String email, String login, LocalDate birthday) {
         return email == null || login == null || birthday == null;
-    }
-
-    private boolean validateName(String name) {
-        return name == null || name.isBlank();
     }
 }
