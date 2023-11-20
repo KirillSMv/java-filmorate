@@ -15,36 +15,36 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage inMemoryUserStorage;
+    private final UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage inMemoryUserStorage) {
-        this.inMemoryUserStorage = inMemoryUserStorage;
+    public UserService(UserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     public User addUser(User user) {
-        return inMemoryUserStorage.addUser(user);
+        return userStorage.addUser(user);
     }
 
     public User updateUser(User user) {
-        return inMemoryUserStorage.updateUser(user);
+        return userStorage.updateUser(user);
     }
 
     public List<User> getUsers() {
-        return inMemoryUserStorage.getUsers();
+        return userStorage.getUsers();
     }
 
     public User getUserById(Integer id) {
-        return inMemoryUserStorage.getUserById(id);
+        return userStorage.getUserById(id);
     }
 
     public void deleteUserById(Integer id) {
-        inMemoryUserStorage.deleteUserById(id);
+        userStorage.deleteUserById(id);
     }
 
     public void addToFriends(Integer id, Integer friendId) {
-        User user = inMemoryUserStorage.getUserById(id);
-        User friendUser = inMemoryUserStorage.getUserById(friendId);
+        User user = userStorage.getUserById(id);
+        User friendUser = userStorage.getUserById(friendId);
 
         boolean isFriendAdded = user.addToFriends(friendId);
         if (!isFriendAdded) {
@@ -55,8 +55,8 @@ public class UserService {
     }
 
     public void deleteFriend(Integer id, Integer friendId) {
-        User user = inMemoryUserStorage.getUserById(id);
-        User friendUser = inMemoryUserStorage.getUserById(friendId);
+        User user = userStorage.getUserById(id);
+        User friendUser = userStorage.getUserById(friendId);
 
         if (!user.checkIfFriends(friendId)) {
             log.error("Пользователя с id {} нет в друзьях у пользователя с id {}", friendId, id);
@@ -67,20 +67,20 @@ public class UserService {
     }
 
     public List<User> getFriends(Integer id) {
-        return inMemoryUserStorage.getUserById(id).getFriends().stream()
-                .map(inMemoryUserStorage::getUserById)
+        return userStorage.getUserById(id).getFriends().stream()
+                .map(userStorage::getUserById)
                 .collect(Collectors.toList());
     }
 
     public List<User> getCommonFriends(Integer id, Integer otherId) {
-        Set<Integer> otherIdFriends = inMemoryUserStorage.getUserById(otherId).getFriends();
-        Set<Integer> userIdFriends = inMemoryUserStorage.getUserById(id).getFriends();
+        Set<Integer> otherIdFriends = userStorage.getUserById(otherId).getFriends();
+        Set<Integer> userIdFriends = userStorage.getUserById(id).getFriends();
         if (otherIdFriends == null || userIdFriends == null) {
             return new ArrayList<User>();
         }
         List<User> friends = userIdFriends.stream()
                 .filter(otherIdFriends::contains)
-                .map(inMemoryUserStorage::getUserById)
+                .map(userStorage::getUserById)
                 .collect(Collectors.toList());
         return friends;
     }

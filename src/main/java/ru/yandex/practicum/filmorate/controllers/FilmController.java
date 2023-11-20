@@ -15,6 +15,7 @@ import static java.time.Month.DECEMBER;
 
 @Slf4j
 @RestController
+@RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
 
@@ -23,46 +24,46 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @PostMapping("/films")
+    @PostMapping
     public Film postFilm(@RequestBody Film film) {
         checkParameters(film);
         return filmService.addFilm(film);
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         return filmService.updateFilm(film);
     }
 
-    @GetMapping("/films")
+    @GetMapping
     public List<Film> getFilms() {
         return filmService.getFilms();
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     public Film getFilm(@PathVariable("id") Integer id) {
         return filmService.getFilmById(id);
     }
 
-    @DeleteMapping("/films/{id}")
+    @DeleteMapping("/{id}")
     public String deleteFilm(@PathVariable("id") Integer id) {
         filmService.deleteFilmById(id);
         return String.format("фильм с id %d удален", id);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public String addLike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
         filmService.addLike(id, userId);
         return String.format("Пользователь с id %d поставил лайк фильму с id %d", userId, id);
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("/{id}/like/{userId}")
     public String deleteLike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
         filmService.deleteLike(id, userId);
         return String.format("Пользователь с id %d убрал лайк фильму с id %d", userId, id);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("/popular")
     public List<Film> getPopularFilms(
             @RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
         return filmService.getPopularFilms(count);

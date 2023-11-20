@@ -19,4 +19,10 @@ public class Film {
     public boolean addLike(Integer userId) {
         return likes.add(userId);
     }
+
+    public boolean removeLike(Integer userId) {
+        return likes.remove(userId);
+    }
 }
+
+

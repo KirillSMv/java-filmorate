@@ -12,34 +12,34 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage inMemoryFilmStorage;
+    private final FilmStorage filmStorage;
 
-    public FilmService(FilmStorage inMemoryFilmStorage) {
-        this.inMemoryFilmStorage = inMemoryFilmStorage;
+    public FilmService(FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
     }
 
     public Film addFilm(Film film) {
-        return inMemoryFilmStorage.addFilm(film);
+        return filmStorage.addFilm(film);
     }
 
     public Film updateFilm(Film film) {
-        return inMemoryFilmStorage.updateFilm(film);
+        return filmStorage.updateFilm(film);
     }
 
     public Film getFilmById(Integer id) {
-        return inMemoryFilmStorage.getFilmById(id);
+        return filmStorage.getFilmById(id);
     }
 
     public void deleteFilmById(Integer id) {
-        inMemoryFilmStorage.deleteFilmById(id);
+        filmStorage.deleteFilmById(id);
     }
 
     public List<Film> getFilms() {
-        return inMemoryFilmStorage.getFilms();
+        return filmStorage.getFilms();
     }
 
     public void addLike(Integer id, Integer userId) {
-        Film film = inMemoryFilmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
         boolean isLikeAdded = film.addLike(userId);
         if (!isLikeAdded) {
             log.error("Пользователь с id {} уже ставил лайк фильму с id {}", userId, id);
@@ -48,8 +48,8 @@ public class FilmService {
     }
 
     public void deleteLike(Integer id, Integer userId) {
-        Film film = inMemoryFilmStorage.getFilmById(id);
-        boolean isLikeDeleted = film.getLikes().remove(userId);
+        Film film = filmStorage.getFilmById(id);
+        boolean isLikeDeleted = film.removeLike(userId);
         if (!isLikeDeleted) {
             log.error("Пользователь с id {} не ставил лайк фильму с id {}", userId, id);
             throw new FilmLikesException(String.format("Пользователь с id %d не ставил лайк фильму с id %d", userId, id));
@@ -57,7 +57,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        return inMemoryFilmStorage.getFilms().stream()
+        return filmStorage.getFilms().stream()
                 .sorted(this::compareFilms)
                 .limit(count)
                 .collect(Collectors.toList());
