@@ -1,56 +1,79 @@
 package ru.yandex.practicum.filmorate.controllers;
 
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exceptions.FilmExistingException;
 import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import static java.time.Month.DECEMBER;
 
 @Slf4j
 @RestController
+@RequestMapping("/films")
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int idOfFilm;
+    private final FilmService filmService;
 
-    @PostMapping("/films")
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
+
+    @PostMapping
     public Film postFilm(@RequestBody Film film) {
         checkParameters(film);
-        film.setId(generateId());
-        films.put(film.getId(), film);
-        log.debug("Сохраняемый объект: {}", film);
-        return film;
+        return filmService.addFilm(film);
     }
 
-    @PutMapping("/films")
+    @PutMapping
     public Film updateFilm(@RequestBody Film film) {
-        checkParameters(film);
-        if (!films.containsKey(film.getId())) {
-            log.warn("фильма с id {} еще не существует.", film.getId());
-            throw new FilmExistingException("Такого фильма еще нет, пожалуйста, в начале добавьте фильм с id: " + film.getId());
-        }
-        films.put(film.getId(), film);
-        log.debug("Сохраняемый объект: {}", film);
-        return film;
+        return filmService.updateFilm(film);
     }
 
-    @GetMapping("/films")
-    public Collection<Film> getFilms() {
-        log.debug("Количество фильмов на текущий момент: {}", films.size());
-        return films.values();
+    @GetMapping
+    public List<Film> getFilms() {
+        return filmService.getFilms();
+    }
+
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable("id") Integer id) {
+        return filmService.getFilmById(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public String deleteFilm(@PathVariable("id") Integer id) {
+        filmService.deleteFilmById(id);
+        return String.format("фильм с id %d удален", id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public String addLike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+        filmService.addLike(id, userId);
+        return String.format("Пользователь с id %d поставил лайк фильму с id %d", userId, id);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public String deleteLike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+        filmService.deleteLike(id, userId);
+        return String.format("Пользователь с id %d убрал лайк фильму с id %d", userId, id);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(
+            @RequestParam(value = "count", defaultValue = "10", required = false) Integer count) {
+        return filmService.getPopularFilms(count);
     }
 
     private void checkParameters(Film film) {
         if (checkIfNotSet(film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration())) {
-            log.warn("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration());
-            throw new FilmValidationException("Пожалуйста, убедитесь, что заданы все параметры для фильма: name, description, releaseDate, duration");
+            log.error("Заданы не все параметры фильма {}, {}, {}, {}", film.getName(), film.getDescription(),
+                    film.getReleaseDate(), film.getDuration());
+            throw new FilmValidationException("Пожалуйста, убедитесь, что заданы все параметры для фильма: " +
+                    "name, description, releaseDate, duration");
         }
         if (film.getName().isBlank()) {
             String msg = "имя не может быть пустым";
@@ -78,9 +101,5 @@ public class FilmController {
 
     private boolean checkIfNotSet(String name, String description, LocalDate releaseDate, Integer duration) {
         return name == null || description == null || releaseDate == null || duration == null;
-    }
-
-    private int generateId() {
-        return ++idOfFilm;
     }
 }

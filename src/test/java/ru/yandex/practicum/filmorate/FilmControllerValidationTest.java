@@ -5,18 +5,25 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class FilmControllerValidationTest { //проверка валидации
+public class FilmControllerValidationTest {
     private FilmController controller;
+    private FilmStorage inMemoryFilmStorage;
+    private FilmService filmService;
 
     @BeforeEach
     public void setup() {
-        controller = new FilmController();
+        inMemoryFilmStorage = new InMemoryFilmStorage();
+        filmService = new FilmService(inMemoryFilmStorage);
+        controller = new FilmController(filmService);
     }
 
     @Test
