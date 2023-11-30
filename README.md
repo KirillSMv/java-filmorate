@@ -1,3 +1,3 @@
 # java-filmorate
 Template repository for Filmorate project.
-[Filmorate_database.pdf](https://github.com/KirillSMv/java-filmorate/files/13516215/Filmorate_database.pdf)
+![Filmorate_database](https://github.com/KirillSMv/java-filmorate/assets/88364531/41947d29-721f-4fd6-99e5-adfb3c1acf89)
