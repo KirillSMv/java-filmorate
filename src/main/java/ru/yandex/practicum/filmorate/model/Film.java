@@ -9,20 +9,27 @@ import java.util.Set;
 @Builder
 @Data
 public class Film {
-    private int id;
+    private Integer id;
     private String name;
-    private String description;
     private LocalDate releaseDate;
-    private Integer duration;
-    private Set<Integer> likes; //Users id
+    private String description;
+    private int duration;
+    private Mpa mpa;  //рейтинг
+    private Set<Genre> genres;
 
-    public boolean addLike(Integer userId) {
-        return likes.add(userId);
+    public Film() {
     }
 
-    public boolean removeLike(Integer userId) {
-        return likes.remove(userId);
+    ;
+
+    public Film(Integer id, String name, LocalDate releaseDate, String description, int duration, Mpa mpa, Set<Genre> genres) {
+        this.id = id;
+        this.name = name;
+        this.releaseDate = releaseDate;
+        this.description = description;
+        this.duration = duration;
+        this.mpa = mpa;
+        this.genres = genres;
     }
+
 }
-
-

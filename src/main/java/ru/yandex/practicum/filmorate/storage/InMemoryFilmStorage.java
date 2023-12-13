@@ -2,15 +2,15 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.FilmStorage;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.*;
 
 @Slf4j
-@Component
+@Component("inMemoryFilmStorage")
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
     private int idOfFilm;
@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         checkIfFilmAdded(film);
-        initializeLikesPropertyIfNull(film);
+        //initializeLikesPropertyIfNull(film);
         film.setId(generateId());
         films.put(film.getId(), film);
         return film;
@@ -27,7 +27,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         checkIfFilmExists(film.getId());
-        initializeLikesPropertyIfNull(film);
+        //initializeLikesPropertyIfNull(film);
         films.put(film.getId(), film);
         return film;
     }
@@ -70,9 +70,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    private void initializeLikesPropertyIfNull(Film film) {
+    /*private void initializeLikesPropertyIfNull(Film film) {
         if (film.getLikes() == null) {
             film.setLikes(new HashSet<>());
         }
-    }
+    }*/
 }
+

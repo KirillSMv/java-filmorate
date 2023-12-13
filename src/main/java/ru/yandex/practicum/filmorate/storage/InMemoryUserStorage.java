@@ -2,15 +2,15 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.UserExistingException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.*;
 
 @Slf4j
-@Component
+@Component("inMemoryUserStorage")
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Integer, User> users = new HashMap<>();
     private int idOfUser;
@@ -18,7 +18,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addUser(User user) {
         checkIfUserAdded(user);
-        initializeFriendsPropertyIfNull(user);
+        //initializeFriendsPropertyIfNull(user);
         user.setId(generateId());
         if (validateName(user.getName())) {
             user.setName(user.getLogin());
@@ -30,7 +30,7 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User updateUser(User user) {
         checkIfUserExists(user.getId());
-        initializeFriendsPropertyIfNull(user);
+        //initializeFriendsPropertyIfNull(user);
         if (validateName(user.getName())) {
             user.setName(user.getLogin());
         }
@@ -80,11 +80,11 @@ public class InMemoryUserStorage implements UserStorage {
         }
     }
 
-    private void initializeFriendsPropertyIfNull(User user) {
+/*    private void initializeFriendsPropertyIfNull(User user) {
         if (user.getFriends() == null) {
             user.setFriends(new HashSet<>());
         }
-    }
+    }*/
 }
 
 

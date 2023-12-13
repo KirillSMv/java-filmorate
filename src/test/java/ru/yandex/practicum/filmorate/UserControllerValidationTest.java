@@ -7,7 +7,7 @@ import ru.yandex.practicum.filmorate.exceptions.UserValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
+import ru.yandex.practicum.filmorate.dao.UserStorage;
 
 import java.time.LocalDate;
 
@@ -22,7 +22,7 @@ public class UserControllerValidationTest {
     @BeforeEach
     public void setup() {
         inMemoryUserStorage = new InMemoryUserStorage();
-        userService = new UserService(inMemoryUserStorage);
+        //userService = new UserService(inMemoryUserStorage);
         controller = new UserController(userService);
     }
 

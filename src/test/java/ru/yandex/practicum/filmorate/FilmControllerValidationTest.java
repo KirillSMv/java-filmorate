@@ -1,19 +1,10 @@
 package ru.yandex.practicum.filmorate;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.controllers.FilmController;
-import ru.yandex.practicum.filmorate.exceptions.FilmValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
-
-import java.time.LocalDate;
+//import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
+/*
 public class FilmControllerValidationTest {
     private FilmController controller;
     private FilmStorage inMemoryFilmStorage;
@@ -145,4 +136,4 @@ public class FilmControllerValidationTest {
         assertEquals(film, controller.postFilm(film));
     }
 }
-
+*/

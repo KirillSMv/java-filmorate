@@ -2,46 +2,50 @@ package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import ru.yandex.practicum.filmorate.exceptions.*;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
+
+import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
 public class ErrorHandler {
+    @ExceptionHandler({FilmNotFoundException.class, UserExistingException.class, UserNotFoundException.class, ObjectNotFoundException.class})
+    public ResponseEntity<Map<String, String>> handleNotFoundException(final RuntimeException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(
+                Map.of("Ошибка:", e.getMessage()),
+                HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler({FilmAlreadyExistException.class})
+    public ResponseEntity<Map<String, String>> handleAlreadyExistsException(final RuntimeException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(
+                Map.of("Ошибка:", e.getMessage()),
+                HttpStatus.CONFLICT
+        );
+    }
 
     @ExceptionHandler({FilmValidationException.class, UserValidationException.class,
             FriendshipException.class, FilmLikesException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleRequestError(final RuntimeException e) {
+    public ResponseEntity<Map<String, String>> handleRequestError(final RuntimeException e) {
         log.error(e.getMessage());
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler({UserNotFoundException.class, FilmAlreadyExistException.class})
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleAlreadyExistsException(final RuntimeException e) {
-        log.error(e.getMessage());
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler({FilmNotFoundException.class, UserExistingException.class})
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundException(final RuntimeException e) {
-        log.error(e.getMessage());
-        return new ErrorResponse(e.getMessage());
+        return new ResponseEntity<>(
+                Map.of("Ошибка:", e.getMessage()),
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleError(final Throwable e) {
-        if (e.getMessage() != null) {
-            log.error(e.getMessage());
-        } else {
-            log.error("Произошла непредвиденная ошибка.");
-        }
-        return new ErrorResponse("Произошла непредвиденная ошибка.");
+    public ResponseEntity<Map<String, String>> handleError(final Throwable e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(
+                Map.of("Произошла ошибка:", e.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
+
