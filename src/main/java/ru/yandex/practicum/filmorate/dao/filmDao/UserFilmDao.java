@@ -1,11 +1,10 @@
-package ru.yandex.practicum.filmorate.dao;
+package ru.yandex.practicum.filmorate.dao.filmDao;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.FilmLikes;
 
 import java.util.List;
 
-public interface FilmLikesStorage {
+public interface UserFilmDao {
     void addLike(Integer id, Integer userId);
 
     void deleteLike(Integer id, Integer userId);
@@ -13,6 +12,4 @@ public interface FilmLikesStorage {
     List<Film> getPopularFilms();
 
     List<Film> getNotPopularFilms();
-
-    FilmLikes getRating(Film film); //todo
 }

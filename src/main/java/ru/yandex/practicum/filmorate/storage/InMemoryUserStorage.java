@@ -2,8 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
-import ru.yandex.practicum.filmorate.exceptions.UserExistingException;
+import ru.yandex.practicum.filmorate.dao.userDao.UserStorage;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -18,7 +17,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User addUser(User user) {
         checkIfUserAdded(user);
-        //initializeFriendsPropertyIfNull(user);
         user.setId(generateId());
         if (validateName(user.getName())) {
             user.setName(user.getLogin());
@@ -30,7 +28,6 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public User updateUser(User user) {
         checkIfUserExists(user.getId());
-        //initializeFriendsPropertyIfNull(user);
         if (validateName(user.getName())) {
             user.setName(user.getLogin());
         }
@@ -58,7 +55,7 @@ public class InMemoryUserStorage implements UserStorage {
     public void checkIfUserExists(Integer id) {
         if (!users.containsKey(id)) {
             log.error("пользователя с id {} не существует.", id);
-            throw new UserExistingException(String.format("пользователя с id %d не существует.", id));
+            throw new UserNotFoundException(String.format("пользователя с id %d не существует.", id));
         }
     }
 
@@ -79,12 +76,6 @@ public class InMemoryUserStorage implements UserStorage {
             throw new UserNotFoundException("такой пользователь уже добавлен");
         }
     }
-
-/*    private void initializeFriendsPropertyIfNull(User user) {
-        if (user.getFriends() == null) {
-            user.setFriends(new HashSet<>());
-        }
-    }*/
 }
 
 

@@ -96,7 +96,7 @@ public class UserController {
             log.error("login не может содержать пробелы, введенный login: {}", user.getLogin());
             throw new UserValidationException("login не может содержать пробелы");
         }
-        if (user.getName().isBlank()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {

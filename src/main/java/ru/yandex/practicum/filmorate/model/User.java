@@ -22,16 +22,3 @@ public class User {
         this.birthday = birthday;
     }
 }
-
-
-/*
-
-
-    public void deleteFriend(Integer id) {
-        friends.remove(id);
-    }
-
-    public boolean checkIfFriends(Integer id) {
-        return friends.contains(id);
-    }
-}*/

@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.UserFriendsDao;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.userDao.UserFriendsDao;
+import ru.yandex.practicum.filmorate.dao.userDao.UserStorage;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -13,15 +13,13 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserService {
-    private final UserStorage userStorage;
-    private final UserFriendsDao userFriends;
+    private UserStorage userStorage;
+    private UserFriendsDao userFriends;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage, UserFriendsDao userFriends) {
-
         this.userStorage = userStorage;
         this.userFriends = userFriends;
-
     }
 
     public User addUser(User user) {
@@ -59,6 +57,4 @@ public class UserService {
     public void deleteFriend(Integer id, Integer friendId) {
         userFriends.deleteFriend(id, friendId);
     }
-
-
 }

@@ -12,7 +12,7 @@ import java.util.Map;
 @Slf4j
 @ControllerAdvice
 public class ErrorHandler {
-    @ExceptionHandler({FilmNotFoundException.class, UserExistingException.class, UserNotFoundException.class, ObjectNotFoundException.class})
+    @ExceptionHandler({FilmNotFoundException.class, UserNotFoundException.class, ObjectNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleNotFoundException(final RuntimeException e) {
         log.error(e.getMessage());
         return new ResponseEntity<>(

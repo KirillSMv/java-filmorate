@@ -3,10 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmLikesStorage;
-import ru.yandex.practicum.filmorate.dao.FilmStorage;
-import ru.yandex.practicum.filmorate.dao.GenreDao;
-import ru.yandex.practicum.filmorate.dao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.filmDao.FilmStorage;
+import ru.yandex.practicum.filmorate.dao.filmDao.GenreDao;
+import ru.yandex.practicum.filmorate.dao.filmDao.UserFilmDao;
+import ru.yandex.practicum.filmorate.dao.userDao.UserStorage;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
-    private final FilmLikesStorage filmLikesDbStorage;
-    private final GenreDao genreDao;
+    private FilmStorage filmStorage;
+    private UserStorage userStorage;
+    private UserFilmDao filmLikesDbStorage;
+    private GenreDao genreDao;
 
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, FilmLikesStorage filmLikesDbStorage, GenreDao genreDao) {
+    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage, UserFilmDao filmLikesDbStorage, GenreDao genreDao) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.filmLikesDbStorage = filmLikesDbStorage;

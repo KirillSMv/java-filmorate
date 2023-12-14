@@ -14,7 +14,7 @@ public class Film {
     private LocalDate releaseDate;
     private String description;
     private int duration;
-    private Mpa mpa;  //рейтинг
+    private Mpa mpa;
     private Set<Genre> genres;
 
     public Film() {
@@ -31,5 +31,4 @@ public class Film {
         this.mpa = mpa;
         this.genres = genres;
     }
-
 }

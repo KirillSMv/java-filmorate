@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dao;
+package ru.yandex.practicum.filmorate.dao.userDao;
 
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -14,4 +14,6 @@ public interface UserStorage {
     User getUserById(Integer id);
 
     List<User> getUsers();
+
+    void checkIfUserExists(Integer id);
 }
