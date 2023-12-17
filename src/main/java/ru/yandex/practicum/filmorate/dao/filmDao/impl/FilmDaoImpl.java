@@ -153,8 +153,8 @@ public class FilmDaoImpl implements FilmDao {
     private Set<Genre> getGenresForFilm(Integer filmId, List<FilmGenre> filmGenres) {
         Set<Genre> genresSet = new HashSet<>();
         for (FilmGenre filmGenre : filmGenres) {
-            if (filmGenre.getFilm_id() == filmId) {
-                genresSet.add(new Genre(filmGenre.getGenre_id(), filmGenre.getGenre()));
+            if (filmGenre.getFilmId() == filmId) {
+                genresSet.add(new Genre(filmGenre.getGenreId(), filmGenre.getGenre()));
             }
         }
         return genresSet;
