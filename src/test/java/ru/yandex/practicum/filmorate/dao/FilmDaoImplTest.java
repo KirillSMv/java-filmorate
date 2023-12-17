@@ -35,7 +35,7 @@ public class FilmDaoImplTest {
     User user = new User(1, "mail@mail.ru", "dolore", "name", LocalDate.of(1946, 8, 20));
     static Set<Genre> genresForTest = new HashSet<>();
 
-    {
+    static {
         genresForTest.add(new Genre(1, "Комедия"));
         genresForTest.add(new Genre(2, "Драма"));
     }
