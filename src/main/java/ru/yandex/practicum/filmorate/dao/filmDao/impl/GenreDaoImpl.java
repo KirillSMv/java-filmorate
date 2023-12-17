@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.filmDao.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -9,14 +8,12 @@ import ru.yandex.practicum.filmorate.dao.filmDao.GenreDao;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Repository
 public class GenreDaoImpl implements GenreDao {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public GenreDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -29,20 +26,11 @@ public class GenreDaoImpl implements GenreDao {
 
     @Override
     public Genre getGenreById(Integer id) {
-        Genre genre = null;
-        try {
-            genre = jdbcTemplate.queryForObject("SELECT * FROM GENRE WHERE genre_id = ?", getGenreMapper(), id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ObjectNotFoundException("Такого жанра нет");
+        if (checkIfGenreExists(id)) {
+            return jdbcTemplate.queryForObject("SELECT * FROM GENRE WHERE genre_id = ?", getGenreMapper(), id);
         }
-        return genre;
-    }
-
-    private Set<Genre> createGenres(int id) {
-        return new HashSet<>(jdbcTemplate.query(
-                "SELECT * FROM GENRE WHERE GENRE_ID IN (" +
-                        "SELECT GENRE_ID " +
-                        "FROM FILM_GENRE WHERE film_id = ?)", getGenreMapper(), id));
+        log.error("Жанр с id {} еще не добавлен.", id);
+        throw new ObjectNotFoundException(String.format("Жанр с id %d еще не добавлен.", id));
     }
 
     private RowMapper<Genre> getGenreMapper() {
@@ -50,5 +38,14 @@ public class GenreDaoImpl implements GenreDao {
                 rs.getInt("genre_id"),
                 rs.getString("genre")
         );
+    }
+
+    private boolean checkIfGenreExists(Integer id) {
+        Integer result = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM GENRE WHERE genre_id = ?", Integer.class, id);
+        if (result == 0) {
+            log.error("Жанра с таким id {} нет", id);
+            return false;
+        }
+        return true;
     }
 }

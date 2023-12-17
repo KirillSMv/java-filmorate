@@ -1,16 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.userDao.UserStorage;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.userDao.UserDao;
+import ru.yandex.practicum.filmorate.exceptions.UserAlreadyExistsException;
 import ru.yandex.practicum.filmorate.exceptions.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
 @Slf4j
-@Component("inMemoryUserStorage")
-public class InMemoryUserStorage implements UserStorage {
+@Repository("inMemoryUserDao")
+public class InMemoryUserDao implements UserDao {
     private final Map<Integer, User> users = new HashMap<>();
     private int idOfUser;
 
@@ -67,15 +68,36 @@ public class InMemoryUserStorage implements UserStorage {
         return name == null || name.isBlank();
     }
 
+    @Override
+    public void addToFriends(Integer id, Integer friendId) {
+    }
+
+    @Override
+    public void deleteFriend(Integer id, Integer friendId) {
+    }
+
+    @Override
+    public List<User> getFriends(Integer id) {
+        return null;
+    }
+
+    @Override
+    public List<User> getCommonFriends(Integer id, Integer otherId) {
+        return null;
+    }
+
     private void checkIfUserAdded(User user) {
         Optional<User> savedUser = users.values().stream()
                 .filter(element -> element.equals(user))
                 .findFirst();
         if (savedUser.isPresent()) {
             log.error("такой пользователь уже добавлен");
-            throw new UserNotFoundException("такой пользователь уже добавлен");
+            throw new UserAlreadyExistsException("такой пользователь уже добавлен");
         }
     }
-}
 
+    public Map<Integer, User> getUsersMap() {
+        return users;
+    }
+}
 

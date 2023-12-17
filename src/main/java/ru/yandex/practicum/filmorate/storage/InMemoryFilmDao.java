@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.filmDao.FilmStorage;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.filmDao.FilmDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.util.*;
 
 @Slf4j
-@Component("inMemoryFilmStorage")
-public class InMemoryFilmStorage implements FilmStorage {
+@Repository("inMemoryFilmDao")
+public class InMemoryFilmDao implements FilmDao {
     private final Map<Integer, Film> films = new HashMap<>();
     private int idOfFilm;
 
@@ -47,6 +47,21 @@ public class InMemoryFilmStorage implements FilmStorage {
         films.remove(id);
     }
 
+    @Override
+    public void addLike(Integer id, Integer userId) {
+
+    }
+
+    @Override
+    public void deleteLike(Integer id, Integer userId) {
+
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count) {
+        return null;
+    }
+
     private int generateId() {
         return ++idOfFilm;
     }
@@ -66,6 +81,10 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.error("такой фильм уже добавлен");
             throw new FilmAlreadyExistException("такой фильм уже добавлен");
         }
+    }
+
+    public Map<Integer, Film> getFilmsMap() {
+        return films;
     }
 
 }

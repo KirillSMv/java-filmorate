@@ -41,7 +41,6 @@ public class GenreDaoImplTest {
 
     @Test
     public void testGetGenreById() {
-        Genre genre = new Genre(1, "Комедия");
         Genre savedGenre = genreDaoImpl.getGenreById(1);
 
         assertEquals(new Genre(1, "Комедия"), savedGenre);

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.filmDao.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -14,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Repository
 public class MpaDaoImpl implements MpaDao {
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public MpaDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -25,26 +24,28 @@ public class MpaDaoImpl implements MpaDao {
         return jdbcTemplate.query("SELECT * FROM MPA", getMpaMapper());
     }
 
-    @Override
-    public Mpa getMpaById(Integer id) {
-        Mpa mpa = null;
-        try {
-            mpa = jdbcTemplate.queryForObject("SELECT * FROM MPA WHERE id = ?", getMpaMapper(), id);
-        } catch (EmptyResultDataAccessException e) {
-            log.error("Рейтинга с id {} еще нет.", id);
-            throw new ObjectNotFoundException("Такого рейтинга нет");
-        }
-        return mpa;
-    }
-
-    public Mpa createMpa(int id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM MPA WHERE id = ?", getMpaMapper(), id);
-    }
-
-    private RowMapper<Mpa> getMpaMapper() {
+    public RowMapper<Mpa> getMpaMapper() {
         return (rs, rowNum) -> new Mpa(
                 rs.getInt("id"),
                 rs.getString("name")
         );
+    }
+
+    @Override
+    public Mpa getMpaById(Integer id) {
+        if (checkIfMpaExists(id)) {
+            return jdbcTemplate.queryForObject("SELECT * FROM MPA WHERE id = ?", getMpaMapper(), id);
+        }
+        log.error("Рейтинг с id {} еще не добавлен.", id);
+        throw new ObjectNotFoundException(String.format("Рейтинг с id {} еще не добавлен.", id));
+    }
+
+    private boolean checkIfMpaExists(Integer id) {
+        Integer result = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM MPA WHERE id = ?", Integer.class, id);
+        if (result == 0) {
+            log.error("Рейтинга с id {} нет", id);
+            return false;
+        }
+        return true;
     }
 }

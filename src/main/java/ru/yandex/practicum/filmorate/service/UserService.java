@@ -4,8 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.userDao.UserFriendsDao;
-import ru.yandex.practicum.filmorate.dao.userDao.UserStorage;
+import ru.yandex.practicum.filmorate.dao.userDao.UserDao;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
@@ -13,48 +12,46 @@ import java.util.List;
 @Slf4j
 @Service
 public class UserService {
-    private UserStorage userStorage;
-    private UserFriendsDao userFriends;
+    private UserDao userDao;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage, UserFriendsDao userFriends) {
-        this.userStorage = userStorage;
-        this.userFriends = userFriends;
+    public UserService(@Qualifier("UserDaoImpl") UserDao userDao) {
+        this.userDao = userDao;
     }
 
     public User addUser(User user) {
-        return userStorage.addUser(user);
+        return userDao.addUser(user);
     }
 
     public User updateUser(User user) {
-        return userStorage.updateUser(user);
+        return userDao.updateUser(user);
     }
 
     public List<User> getUsers() {
-        return userStorage.getUsers();
+        return userDao.getUsers();
     }
 
     public User getUserById(Integer id) {
-        return userStorage.getUserById(id);
+        return userDao.getUserById(id);
     }
 
     public void deleteUserById(Integer id) {
-        userStorage.deleteUserById(id);
+        userDao.deleteUserById(id);
     }
 
     public void addToFriends(Integer id, Integer friendId) {
-        userFriends.addToFriends(id, friendId);
+        userDao.addToFriends(id, friendId);
     }
 
     public List<User> getFriends(Integer id) {
-        return userFriends.getFriends(id);
+        return userDao.getFriends(id);
     }
 
     public List<User> getCommonFriends(Integer id, Integer otherId) {
-        return userFriends.getCommonFriends(id, otherId);
+        return userDao.getCommonFriends(id, otherId);
     }
 
     public void deleteFriend(Integer id, Integer friendId) {
-        userFriends.deleteFriend(id, friendId);
+        userDao.deleteFriend(id, friendId);
     }
 }
