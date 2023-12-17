@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.yandex.practicum.filmorate.dao.filmDao.impl.FilmDaoImpl;
 import ru.yandex.practicum.filmorate.dao.filmDao.impl.MpaDaoImpl;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -21,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class MpaDaoImplTest {
     private MpaDaoImpl mpaDaoImpl;
     private final JdbcTemplate jdbcTemplate;
+
     @BeforeEach
     public void setUp() {
         mpaDaoImpl = new MpaDaoImpl(jdbcTemplate);
