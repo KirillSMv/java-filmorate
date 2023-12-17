@@ -4,13 +4,13 @@ import lombok.Data;
 
 @Data
 public class FilmGenre {
-    private int film_id;
-    private int genre_id;
+    private int filmId;
+    private int genreId;
     private String genre;
 
-    public FilmGenre(int film_id, int genre_id, String genre) {
-        this.film_id = film_id;
-        this.genre_id = genre_id;
+    public FilmGenre(int filmId, int genreId, String genre) {
+        this.filmId = filmId;
+        this.genreId = genreId;
         this.genre = genre;
     }
 }
