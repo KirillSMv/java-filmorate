@@ -51,7 +51,8 @@ public class FilmDaoImplTest {
                 film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         filmDbStorage.saveGenres(film);
 
-        Film savedFilm = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(), film.getId());
+        String sqlForFilmsId = String.format("SELECT id FROM FILMS WHERE id = %d", film.getId());
+        Film savedFilm = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(sqlForFilmsId), film.getId());
         assertEquals(savedFilm, film);
     }
 
@@ -73,7 +74,8 @@ public class FilmDaoImplTest {
         otherFilm.setId(film.getId());
         filmDbStorage.updateFilm(otherFilm);
 
-        Film savedFilm = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(), otherFilm.getId());
+        String sqlForFilmsId = String.format("SELECT id FROM FILMS WHERE id = %d", otherFilm.getId());
+        Film savedFilm = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(sqlForFilmsId), otherFilm.getId());
         assertEquals(savedFilm, otherFilm);
     }
 
@@ -83,7 +85,9 @@ public class FilmDaoImplTest {
                 film.getId(), film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId());
         filmDbStorage.saveGenres(film);
         filmDbStorage.deleteFilmById(film.getId());
-        assertThrows(EmptyResultDataAccessException.class, () -> jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(), 1));
+
+        String sqlForFilmsId = String.format("SELECT id FROM FILMS WHERE id = %d", film.getId());
+        assertThrows(EmptyResultDataAccessException.class, () -> jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", filmDbStorage.getFilmMapper(sqlForFilmsId), 1));
     }
 
     @Test
@@ -124,4 +128,3 @@ public class FilmDaoImplTest {
         assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM USER_FILM WHERE film_id = ?", Integer.class, film.getId()));
     }
 }
-

@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.filmDao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.filmDao.MpaDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmLikesException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ObjectNotFoundException;
@@ -25,11 +26,11 @@ import java.util.stream.Collectors;
 @Repository("FilmDaoImpl")
 public class FilmDaoImpl implements FilmDao {
     private JdbcTemplate jdbcTemplate;
-    private MpaDaoImpl mpaDaoImpl;
+    private MpaDao mpaDao;
 
-    public FilmDaoImpl(JdbcTemplate jdbcTemplate, MpaDaoImpl mpaDaoImpl) {
+    public FilmDaoImpl(JdbcTemplate jdbcTemplate, MpaDaoImpl mpaDao) {
         this.jdbcTemplate = jdbcTemplate;
-        this.mpaDaoImpl = mpaDaoImpl;
+        this.mpaDao = mpaDao;
     }
 
     @Override
@@ -49,7 +50,8 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public Film getFilmById(Integer id) {
         if (checkIfFilmExists(id)) {
-            Film film = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", getFilmMapper(), id);
+            String sql = String.format("SELECT id FROM FILMS WHERE id = %d", id);
+            Film film = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", getFilmMapper(sql), id);
             sortGenres(film);
             return film;
         }
@@ -90,7 +92,8 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getFilms() {
-        return jdbcTemplate.query("SELECT * FROM FILMS", getFilmMapper());
+        String sql = "SELECT id FROM FILMS";
+        return jdbcTemplate.query("SELECT * FROM FILMS", getFilmMapper(sql));
     }
 
     @Override
@@ -125,18 +128,21 @@ public class FilmDaoImpl implements FilmDao {
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
-        return jdbcTemplate.query(
-                "SELECT * " +
+        String sqlForFilmsId =
+                String.format("SELECT f.id " +
                         "FROM FILMS AS f " +
                         "LEFT OUTER JOIN USER_FILM AS uf " +
                         "ON f.id = uf.film_id " +
-                        "GROUP BY f.id ORDER BY COUNT(uf.user_id) DESC " +
-                        "LIMIT ?",
-                getFilmMapper(), count);
+                        "GROUP BY f.id " +
+                        "ORDER BY COUNT(uf.user_id) DESC " +
+                        "LIMIT %d", count);
+        return jdbcTemplate.query(
+                "SELECT * FROM FILMS WHERE id IN(" + sqlForFilmsId + ")",
+                getFilmMapper(sqlForFilmsId));
     }
 
-    public RowMapper<Film> getFilmMapper() {
-        List<FilmGenre> filmGenres = getGenres();
+    public RowMapper<Film> getFilmMapper(String sqlForFilmsId) {
+        List<FilmGenre> filmGenres = getGenres(sqlForFilmsId);
         List<Mpa> mpaList = getMpa();
         return (rs, rowNum) -> new Film(
                 rs.getInt("id"),
@@ -149,24 +155,25 @@ public class FilmDaoImpl implements FilmDao {
         );
     }
 
-
     private Set<Genre> getGenresForFilm(Integer filmId, List<FilmGenre> filmGenres) {
-        Set<Genre> genresSet = new HashSet<>();
-        for (FilmGenre filmGenre : filmGenres) {
-            if (filmGenre.getFilmId() == filmId) {
-                genresSet.add(new Genre(filmGenre.getGenreId(), filmGenre.getGenre()));
-            }
+        Map<Integer, List<FilmGenre>> resultMapForFilm = filmGenres.stream()
+                .collect(Collectors.groupingBy(FilmGenre::getFilmId));
+        if (resultMapForFilm.get(filmId) == null) {
+            log.error("Для фильма с id {} не указано жанров", filmId);
+            return Collections.emptySet();
         }
-        return genresSet;
+        return resultMapForFilm.get(filmId).stream()
+                .map(filmGenre -> new Genre(filmGenre.getGenreId(), filmGenre.getGenre()))
+                .collect(Collectors.toSet());
     }
 
-    private List<FilmGenre> getGenres() {
-        List<FilmGenre> filmGenreList = jdbcTemplate.query(
+    private List<FilmGenre> getGenres(String sqlForFilmsId) {
+        return jdbcTemplate.query(
                 "SELECT film_id, fg.genre_id, genre " +
                         "FROM FILM_GENRE AS fg " +
                         "JOIN GENRE AS g " +
-                        "ON fg.genre_id = g.genre_id", getFilmGenreMapper());
-        return filmGenreList;
+                        "ON fg.genre_id = g.genre_id " +
+                        "WHERE fg.film_id IN(" + sqlForFilmsId + ")", getFilmGenreMapper());
     }
 
     private RowMapper<FilmGenre> getFilmGenreMapper() {
@@ -178,7 +185,7 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     public List<Mpa> getMpa() {
-        return mpaDaoImpl.getMpa();
+        return mpaDao.getMpa();
     }
 
     private Map<String, Object> filmToMap(Film film) {
