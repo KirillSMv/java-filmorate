@@ -50,9 +50,8 @@ public class FilmDaoImpl implements FilmDao {
     @Override
     public Film getFilmById(Integer id) {
         if (checkIfFilmExists(id)) {
-            String sql = String.format("SELECT id FROM FILMS WHERE id = %d", id);
-            Film film = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", getFilmMapper(sql), id);
-            sortGenres(film);
+            Film film = jdbcTemplate.queryForObject("SELECT * FROM FILMS WHERE id = ?", getFilmMapper(), id);
+            setGenreForFilm(film);
             return film;
         }
         log.error("фильм с id {} еще не добавлен.", id);
@@ -91,12 +90,6 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
-    public List<Film> getFilms() {
-        String sql = "SELECT id FROM FILMS";
-        return jdbcTemplate.query("SELECT * FROM FILMS", getFilmMapper(sql));
-    }
-
-    @Override
     public void addLike(Integer id, Integer userId) {
         if (checkIfFilmExists(id) && checkIfUserExists(userId)) {
             try {
@@ -127,37 +120,57 @@ public class FilmDaoImpl implements FilmDao {
     }
 
     @Override
+    public List<Film> getFilms() {
+        List<Film> films = jdbcTemplate.query("SELECT * FROM FILMS", getFilmMapper());
+        setGenreForFilms(films);
+        return films;
+    }
+
+    @Override
     public List<Film> getPopularFilms(Integer count) {
-        String sqlForFilmsId =
-                String.format("SELECT f.id " +
-                        "FROM FILMS AS f " +
-                        "LEFT OUTER JOIN USER_FILM AS uf " +
-                        "ON f.id = uf.film_id " +
-                        "GROUP BY f.id " +
-                        "ORDER BY COUNT(uf.user_id) DESC " +
-                        "LIMIT %d", count);
-        return jdbcTemplate.query(
-                "SELECT * FROM FILMS WHERE id IN(" + sqlForFilmsId + ")",
-                getFilmMapper(sqlForFilmsId));
+        List<Film> films = jdbcTemplate.query("SELECT * " +
+                "FROM FILMS AS f " +
+                "LEFT OUTER JOIN USER_FILM AS uf " +
+                "ON f.id = uf.film_id " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(uf.user_id) DESC " +
+                "LIMIT ?", getFilmMapper(), count);
+        setGenreForFilms(films);
+        return films;
     }
 
-    public RowMapper<Film> getFilmMapper(String sqlForFilmsId) {
-        List<FilmGenre> filmGenres = getGenres(sqlForFilmsId);
-        List<Mpa> mpaList = getMpa();
-        return (rs, rowNum) -> new Film(
-                rs.getInt("id"),
-                rs.getString("name"),
-                rs.getDate("RELEASE_DATE").toLocalDate(),
-                rs.getString("description"),
-                rs.getInt("duration"),
-                mpaList.get(rs.getInt("mpa") - 1),
-                getGenresForFilm(rs.getInt("id"), filmGenres)
-        );
+    private void setGenreForFilms(List<Film> films) {
+        Map<Integer, List<FilmGenre>> filmGenreMap = getFilmGenreMap(getFilmsId(films));
+        for (Film film : films) {
+            film.setGenres(getGenresForFilm(film.getId(), filmGenreMap));
+        }
     }
 
-    private Set<Genre> getGenresForFilm(Integer filmId, List<FilmGenre> filmGenres) {
-        Map<Integer, List<FilmGenre>> resultMapForFilm = filmGenres.stream()
+    private Map<Integer, List<FilmGenre>> getFilmGenreMap(List<Integer> filmsId) {
+        List<FilmGenre> genres = getGenres(filmsId);
+        return genres.stream()
                 .collect(Collectors.groupingBy(FilmGenre::getFilmId));
+    }
+
+    private List<Integer> getFilmsId(List<Film> films) {
+        return films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+    }
+
+    public RowMapper<Film> getFilmMapper() {
+        List<Mpa> mpaList = getMpa();
+        return (rs, rowNum) -> Film.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .releaseDate(rs.getDate("RELEASE_DATE").toLocalDate())
+                .description(rs.getString("description"))
+                .duration(rs.getInt("duration"))
+                .mpa(mpaList.get(rs.getInt("mpa") - 1))
+                .build();
+    }
+
+    private Set<Genre> getGenresForFilm(Integer filmId, Map<Integer, List<FilmGenre>> resultMapForFilm) {
         if (resultMapForFilm.get(filmId) == null) {
             log.error("Для фильма с id {} не указано жанров", filmId);
             return Collections.emptySet();
@@ -167,13 +180,16 @@ public class FilmDaoImpl implements FilmDao {
                 .collect(Collectors.toSet());
     }
 
-    private List<FilmGenre> getGenres(String sqlForFilmsId) {
+    private List<FilmGenre> getGenres(List<Integer> filmsId) {
+        String filmsIdString = filmsId.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(",", " ", " "));
         return jdbcTemplate.query(
                 "SELECT film_id, fg.genre_id, genre " +
                         "FROM FILM_GENRE AS fg " +
                         "JOIN GENRE AS g " +
                         "ON fg.genre_id = g.genre_id " +
-                        "WHERE fg.film_id IN(" + sqlForFilmsId + ")", getFilmGenreMapper());
+                        "WHERE fg.film_id IN(" + filmsIdString + ")", getFilmGenreMapper());
     }
 
     private RowMapper<FilmGenre> getFilmGenreMapper() {
@@ -215,6 +231,19 @@ public class FilmDaoImpl implements FilmDao {
                         }
                     }
             );
+        }
+    }
+
+    public void setGenreForFilm(Film film) {
+        List<FilmGenre> filmGenreList = getGenres(Collections.singletonList(film.getId()));
+        if (filmGenreList.isEmpty()) {
+            log.error("Для фильма с id {} не указано жанров", film.getId());
+            film.setGenres(Collections.emptySet());
+        } else {
+            film.setGenres(filmGenreList.stream()
+                    .map(filmGenre -> new Genre(filmGenre.getGenreId(), filmGenre.getGenre()))
+                    .collect(Collectors.toSet()));
+            sortGenres(film);
         }
     }
 
