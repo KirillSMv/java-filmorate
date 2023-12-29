@@ -29,9 +29,9 @@ public class FilmController {
         return filmService.addFilm(film);
     }
 
-    @PutMapping
-    public Film updateFilm(@RequestBody Film film) {
-        return filmService.updateFilm(film);
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable("id") Integer id) {
+        return filmService.getFilmById(id);
     }
 
     @GetMapping
@@ -39,15 +39,16 @@ public class FilmController {
         return filmService.getFilms();
     }
 
-    @GetMapping("/{id}")
-    public Film getFilm(@PathVariable("id") Integer id) {
-        return filmService.getFilmById(id);
-    }
-
     @DeleteMapping("/{id}")
     public String deleteFilm(@PathVariable("id") Integer id) {
         filmService.deleteFilmById(id);
         return String.format("фильм с id %d удален", id);
+    }
+
+    @PutMapping
+    public Film updateFilm(@RequestBody Film film) {
+        checkParameters(film);
+        return filmService.updateFilm(film);
     }
 
     @PutMapping("/{id}/like/{userId}")

@@ -1,24 +1,23 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.filmDao.FilmDao;
 import ru.yandex.practicum.filmorate.exceptions.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.exceptions.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.*;
 
 @Slf4j
-@Component
-public class InMemoryFilmStorage implements FilmStorage {
+@Repository("inMemoryFilmDao")
+public class InMemoryFilmDao implements FilmDao {
     private final Map<Integer, Film> films = new HashMap<>();
     private int idOfFilm;
 
     @Override
     public Film addFilm(Film film) {
         checkIfFilmAdded(film);
-        initializeLikesPropertyIfNull(film);
         film.setId(generateId());
         films.put(film.getId(), film);
         return film;
@@ -27,7 +26,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
         checkIfFilmExists(film.getId());
-        initializeLikesPropertyIfNull(film);
         films.put(film.getId(), film);
         return film;
     }
@@ -47,6 +45,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void deleteFilmById(Integer id) {
         checkIfFilmExists(id);
         films.remove(id);
+    }
+
+    @Override
+    public void addLike(Integer id, Integer userId) {
+
+    }
+
+    @Override
+    public void deleteLike(Integer id, Integer userId) {
+
+    }
+
+    @Override
+    public List<Film> getPopularFilms(Integer count) {
+        return null;
     }
 
     private int generateId() {
@@ -70,9 +83,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
     }
 
-    private void initializeLikesPropertyIfNull(Film film) {
-        if (film.getLikes() == null) {
-            film.setLikes(new HashSet<>());
-        }
+    public Map<Integer, Film> getFilmsMap() {
+        return films;
     }
+
 }
+

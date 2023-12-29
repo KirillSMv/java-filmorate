@@ -1,69 +1,54 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exceptions.FilmLikesException;
+import ru.yandex.practicum.filmorate.dao.filmDao.FilmDao;
+import ru.yandex.practicum.filmorate.dao.userDao.UserDao;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class FilmService {
-    private final FilmStorage filmStorage;
+    private FilmDao filmDao;
+    private UserDao userDao;
 
-    public FilmService(FilmStorage filmStorage) {
-        this.filmStorage = filmStorage;
+    public FilmService(@Qualifier("FilmDaoImpl") FilmDao filmDao, @Qualifier("UserDaoImpl") UserDao userDao) {
+        this.filmDao = filmDao;
+        this.userDao = userDao;
     }
 
     public Film addFilm(Film film) {
-        return filmStorage.addFilm(film);
-    }
-
-    public Film updateFilm(Film film) {
-        return filmStorage.updateFilm(film);
+        return filmDao.addFilm(film);
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id);
-    }
-
-    public void deleteFilmById(Integer id) {
-        filmStorage.deleteFilmById(id);
+        return filmDao.getFilmById(id);
     }
 
     public List<Film> getFilms() {
-        return filmStorage.getFilms();
+        return filmDao.getFilms();
+    }
+
+    public void deleteFilmById(Integer id) {
+        filmDao.deleteFilmById(id);
+    }
+
+    public Film updateFilm(Film film) {
+        return filmDao.updateFilm(film);
     }
 
     public void addLike(Integer id, Integer userId) {
-        Film film = filmStorage.getFilmById(id);
-        boolean isLikeAdded = film.addLike(userId);
-        if (!isLikeAdded) {
-            log.error("Пользователь с id {} уже ставил лайк фильму с id {}", userId, id);
-            throw new FilmLikesException(String.format("Пользователь с id %d уже ставил лайк фильму с id %d", userId, id));
-        }
+        filmDao.addLike(id, userId);
     }
 
     public void deleteLike(Integer id, Integer userId) {
-        Film film = filmStorage.getFilmById(id);
-        boolean isLikeDeleted = film.removeLike(userId);
-        if (!isLikeDeleted) {
-            log.error("Пользователь с id {} не ставил лайк фильму с id {}", userId, id);
-            throw new FilmLikesException(String.format("Пользователь с id %d не ставил лайк фильму с id %d", userId, id));
-        }
+        filmDao.deleteLike(id, userId);
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        return filmStorage.getFilms().stream()
-                .sorted(this::compareFilms)
-                .limit(count)
-                .collect(Collectors.toList());
-    }
-
-    private int compareFilms(Film film1, Film film2) {
-        return Integer.reverse(Integer.compare(film1.getLikes().size(), film2.getLikes().size()));
+        return filmDao.getPopularFilms(count);
     }
 }

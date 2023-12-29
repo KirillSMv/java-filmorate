@@ -27,8 +27,13 @@ public class UserController {
         return userService.addUser(user);
     }
 
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable("id") Integer id) {
+        return userService.getUserById(id);
+    }
+
     @PutMapping
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@RequestBody User user) { //todo код 500 вместо 404
         checkParameters(user);
         return userService.updateUser(user);
     }
@@ -36,11 +41,6 @@ public class UserController {
     @GetMapping
     public List<User> getUsers() {
         return userService.getUsers();
-    }
-
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable("id") Integer id) {
-        return userService.getUserById(id);
     }
 
     @DeleteMapping("/{id}")
@@ -55,12 +55,6 @@ public class UserController {
         return "Пользователи добавлены в друзья";
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public String deleteFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
-        userService.deleteFriend(id, friendId);
-        return "Пользователи удалены из друзей";
-    }
-
     @GetMapping("/{id}/friends")
     public List<User> getFriends(@PathVariable("id") Integer id) {
         return userService.getFriends(id);
@@ -69,6 +63,12 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriends(@PathVariable("id") Integer id, @PathVariable("otherId") Integer otherId) {
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public String deleteFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer friendId) {
+        userService.deleteFriend(id, friendId);
+        return "Пользователи удалены из друзей";
     }
 
     private void checkParameters(User user) {
@@ -95,6 +95,9 @@ public class UserController {
         if (user.getLogin().contains(" ")) {
             log.error("login не может содержать пробелы, введенный login: {}", user.getLogin());
             throw new UserValidationException("login не может содержать пробелы");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.error("День Рождения не может быть в будушем, введенная дата: {}", user.getBirthday());
